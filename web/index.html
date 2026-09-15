@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniMax 2API 管理台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='6' y1='4' x2='44' y2='46' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%236366f1'/%3E%3Cstop offset='.55' stop-color='%238b5cf6'/%3E%3Cstop offset='1' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='8' y='12' width='32' height='24' rx='5' fill='url(%23g)'/%3E%3Cpath d='M19 20.5 L31 24 L19 27.5 Z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/web/static/style.css">
+</head>
+<body>
+
+<!-- 登录页 -->
+<div class="login-page" id="loginPage" style="display:none">
+<div class="login-box">
+<h2>MiniMax 2API</h2>
+<div class="subtitle">海螺视频多账号管理台</div>
+<div class="login-error" id="loginError"></div>
+<div class="form-group">
+<label>用户名</label>
+<input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+</div>
+<div class="form-group">
+<label>密码</label>
+<input type="password" id="loginPass" placeholder="admin123" autocomplete="current-password">
+</div>
+<button class="btn btn-primary" onclick="doLogin()">登录</button>
+<div class="hint">默认账户: admin / admin123</div>
+</div>
+<div class="login-footer">仅供个人学习与自有账号管理 · 请遵守上游服务条款</div>
+</div>
+
+<!-- 主界面 -->
+<div id="mainApp" style="display:none">
+
+<header class="topnav">
+<div class="topnav-inner">
+<div class="brand-mini"><svg width="30" height="30" viewBox="0 0 48 48" fill="none" aria-hidden="true"><defs><linearGradient id="lg1" x1="6" y1="4" x2="44" y2="46" gradientUnits="userSpaceOnUse"><stop stop-color="#6366f1"/><stop offset=".55" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect x="8" y="12" width="32" height="24" rx="5" fill="url(#lg1)"/><path d="M19 20.5 L31 24 L19 27.5 Z" fill="#fff"/></svg><span class="brand-txt"><span>MiniMax 2API</span><span class="brand-sub">海螺视频多账号网关</span></span></div>
+<nav class="pill-nav">
+<a class="nav-link active" data-section="dashboard" onclick="switchSection('dashboard')">仪表盘</a>
+<a class="nav-link" data-section="accounts" onclick="switchSection('accounts')">账号管理</a>
+<a class="nav-link" data-section="tasks" onclick="switchSection('tasks')">视频任务</a>
+<a class="nav-link" data-section="test" onclick="switchSection('test')">在线测试</a>
+<a class="nav-link" data-section="keys" onclick="switchSection('keys')">API 密钥</a>
+<a class="nav-link" data-section="settings" onclick="switchSection('settings')">设置</a>
+</nav>
+<div class="top-user">
+<span class="status-chip"><span class="dot"></span><span class="status-txt">运行中</span></span>
+<div class="user-avatar" id="userAvatar">A</div>
+<button class="btn-logout-top" onclick="doLogout()">退出</button>
+</div>
+</div>
+</header>
+
+<main class="app-content">
+
+<!-- ===== 仪表盘 ===== -->
+<div class="section active" id="section-dashboard">
+<div class="stats-bar">
+<div class="stat-card blue"><div class="stat-body"><div class="label">账号总数</div><div class="value" id="statAccTotal">-</div></div></div>
+<div class="stat-card green"><div class="stat-body"><div class="label">可用账号</div><div class="value" id="statAccActive">-</div></div></div>
+<div class="stat-card orange"><div class="stat-body"><div class="label">总余额(积分)</div><div class="value" id="statBalance">-</div></div></div>
+<div class="stat-card purple"><div class="stat-body"><div class="label">今日任务</div><div class="value" id="statTasksToday">-</div></div></div>
+<div class="stat-card green"><div class="stat-body"><div class="label">今日成功</div><div class="value" id="statSucc">-</div></div></div>
+<div class="stat-card orange"><div class="stat-body"><div class="label">今日失败</div><div class="value" id="statFail">-</div></div></div>
+<div class="stat-card blue"><div class="stat-body"><div class="label">成功率(今日)</div><div class="value" id="statSuccRate">-</div></div></div>
+<div class="stat-card purple"><div class="stat-body"><div class="label">累计消耗积分</div><div class="value" id="statCredits">-</div></div></div>
+</div>
+<div class="card">
+<div class="card-header"><h2>近 7 天用量</h2><button class="btn btn-sm btn-secondary" onclick="loadStats()">刷新</button></div>
+<div id="dailyTable"><div class="empty"><p>暂无数据</p></div></div>
+</div>
+</div>
+
+<!-- ===== 账号管理 ===== -->
+<div class="section" id="section-accounts">
+<div class="toolbar">
+<button class="btn btn-primary" onclick="showImportModal()">+ 导入账号</button>
+<button class="btn btn-secondary" onclick="loadAccounts()">刷新</button>
+<button class="btn btn-secondary" onclick="testAllAccounts()">批量测试</button>
+<span class="toolbar-title" id="accCount"></span>
+</div>
+<div class="card">
+<div class="card-header"><h2>账号列表</h2></div>
+<div id="accountsTable"><div class="empty"><p>暂无账号，点击「+ 导入账号」开始</p></div></div>
+</div>
+</div>
+
+<!-- ===== 视频任务 ===== -->
+<div class="section" id="section-tasks">
+<div class="toolbar">
+<select id="taskStatusFilter" class="form-input" style="width:auto" onchange="taskPage=1;loadTasks()">
+<option value="">全部状态</option>
+<option value="queued">排队中(queued)</option>
+<option value="processing">进行中(processing)</option>
+<option value="succeeded">成功(succeeded)</option>
+<option value="failed">失败(failed)</option>
+<option value="cancelled">已取消(cancelled)</option>
+<option value="SUBMIT_UNKNOWN">提交不明(SUBMIT_UNKNOWN)</option>
+</select>
+<label style="font-size:12px;color:var(--c-text-light);display:flex;align-items:center;gap:4px">
+<input type="checkbox" id="taskAutoRefresh" checked onchange="toggleTaskAutoRefresh()"> 5s 自动刷新
+</label>
+<button class="btn btn-secondary" onclick="loadTasks()">刷新</button>
+<span class="toolbar-title" id="taskCount"></span>
+</div>
+<div class="card">
+<div class="card-header"><h2>任务列表</h2></div>
+<div id="tasksTable"><div class="empty"><p>暂无任务</p></div></div>
+<div class="pager" id="tasksPager"></div>
+</div>
+</div>
+
+<!-- ===== 在线测试 ===== -->
+<div class="section" id="section-test">
+<div class="card">
+<div class="card-header"><h2>在线测试生成</h2>
+<button class="btn btn-sm btn-secondary" onclick="loadTestTab()">刷新模型/账号</button></div>
+<div style="padding:20px">
+<div class="form-group"><label class="form-label">媒体类型</label>
+<div class="seg-toggle" id="tgMediaToggle">
+<button type="button" class="seg-btn active" data-media="video" onclick="tgSetMediaType('video')">视频</button>
+<button type="button" class="seg-btn" data-media="image" onclick="tgSetMediaType('image')">图片</button>
+</div></div>
+<div class="tg-grid">
+<div class="form-group"><label class="form-label">模型</label>
+<select class="form-input" id="tgModel" onchange="tgModelChanged()"></select></div>
+<div class="form-group"><label class="form-label">账号</label>
+<select class="form-input" id="tgAccount"></select></div>
+</div>
+<div class="form-group"><label class="form-label">提示词 prompt</label>
+<textarea class="form-input" id="tgPrompt" rows="4" style="font-family:inherit;font-size:13px;resize:vertical;min-height:80px" placeholder="描述你想生成的视频内容，例如：一只猫在月球上跳舞，电影感光影" oninput="tgUpdatePromptCount()"></textarea>
+<div style="font-size:11.5px;color:var(--c-text-lighter);margin-top:4px;text-align:right" id="tgPromptCount">0 / 10000 字符</div></div>
+<div class="tg-grid">
+<div class="form-group tg-video-only"><label class="form-label">时长 duration <span id="tgDurationHint" style="color:var(--c-text-lighter);font-weight:400"></span></label>
+<input class="form-input" type="number" id="tgDuration" value="5" min="4" max="15"></div>
+<div class="form-group"><label class="form-label">分辨率 resolution</label>
+<select class="form-input" id="tgResolution"></select></div>
+<div class="form-group"><label class="form-label" id="tgRatioLabel">画幅 ratio</label>
+<select class="form-input" id="tgRatio"></select></div>
+<div class="form-group tg-video-only"><label class="form-label">生成音频 generate_audio</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;padding-top:9px"><input type="checkbox" id="tgAudio" checked style="width:auto"> 开启</label></div>
+</div>
+<div class="tg-grid tg-video-only">
+<div class="form-group"><label class="form-label">首帧图 URL（可选）</label>
+<input class="form-input" id="tgFirstFrame" placeholder="https://... 或 data:image/png;base64,..."></div>
+<div class="form-group"><label class="form-label">尾帧图 URL（可选，需同时提供首帧）</label>
+<input class="form-input" id="tgLastFrame" placeholder="https://..."></div>
+</div>
+<div class="form-group"><label class="form-label" id="tgRefLabel">参考图 URLs（可选，每行一个，≤9 张；与首尾帧互斥）</label>
+<textarea class="form-input" id="tgRefImages" rows="3" style="font-family:Consolas,monospace;font-size:12px;resize:vertical;min-height:60px" placeholder="https://example.com/ref1.png&#10;https://example.com/ref2.png"></textarea></div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<button class="btn btn-secondary" id="tgEstimateBtn" onclick="tgEstimate()">估算积分</button>
+<button class="btn btn-primary" id="tgSubmitBtn" onclick="tgSubmit()">提交测试</button>
+<span id="tgEstimateResult" style="font-size:12.5px;color:var(--c-text-light)"></span>
+</div>
+</div>
+</div>
+
+<div class="card" id="tgTaskCard" style="display:none">
+<div class="card-header"><h2>测试任务</h2><span class="mono" id="tgTaskId" style="font-size:12px;color:var(--c-text-lighter)"></span></div>
+<div style="padding:20px" id="tgTaskBody"></div>
+</div>
+
+<div class="card">
+<div class="card-header"><h2>远端模型目录</h2>
+<div style="display:flex;gap:8px;align-items:center">
+<span id="tgRemoteMeta" style="font-size:11.5px;color:var(--c-text-lighter)"></span>
+<button class="btn btn-sm btn-secondary" onclick="tgLoadRemoteModels(true)">刷新</button>
+<button class="btn btn-sm btn-secondary" onclick="tgToggleRemotePanel()" id="tgRemoteToggle">展开</button>
+</div></div>
+<div id="tgRemoteBody" style="display:none;padding:8px 20px 16px"></div>
+</div>
+</div>
+
+<!-- ===== API 密钥 ===== -->
+<div class="section" id="section-keys">
+<div class="toolbar">
+<button class="btn btn-primary" onclick="showCreateKeyModal()">+ 创建密钥</button>
+<button class="btn btn-secondary" onclick="loadKeys()">刷新</button>
+</div>
+<div class="card">
+<div class="card-header"><h2>密钥列表</h2></div>
+<div id="keysTable"><div class="empty"><p>暂无密钥</p></div></div>
+</div>
+</div>
+
+<!-- ===== 设置 ===== -->
+<div class="section" id="section-settings">
+<div class="card">
+<div class="card-header"><h2>运行参数（热更生效）</h2></div>
+<div style="padding:20px;max-width:560px">
+<div class="form-group"><label class="form-label">轮询间隔 poll_interval_sec（秒）</label>
+<input class="form-input" type="number" id="setPoll" min="1" max="300"></div>
+<div class="form-group"><label class="form-label">Worker 数 worker_count（1-32）</label>
+<input class="form-input" type="number" id="setWorkers" min="1" max="32"></div>
+<div class="form-group"><label class="form-label">每账号并发 per_account_concurrency（1-16）</label>
+<input class="form-input" type="number" id="setConc" min="1" max="16"></div>
+<div class="form-group"><label class="form-label">余额安全系数 balance_safety_factor（1.0-10.0）</label>
+<input class="form-input" type="number" id="setSafety" min="1" max="10" step="0.1"></div>
+<button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><h2>关于</h2></div>
+<div style="padding:20px;font-size:13px;color:var(--c-text-light);line-height:1.8">
+<p>minimax-2api —— MiniMax 海螺视频多账号 2API 服务（逆向协议，仅供学习与自有账号管理）。</p>
+<p>对外接口：<code>POST /v1/videos</code> · <code>GET /v1/videos/{id}</code> · <code>GET /v1/videos/{id}/content</code> · <code>GET /v1/models</code>，认证 <code>Authorization: Bearer sk-xxx</code>。</p>
+<p>风险提示：使用本系统可能违反上游服务条款，账号存在被风控/封禁的可能，请自行评估。</p>
+</div>
+</div>
+</div>
+
+<div class="app-footer">minimax-2api · 仅供学习交流</div>
+</main>
+</div>
+
+<!-- 导入账号对话框 -->
+<div class="modal-overlay" id="importModal">
+<div class="modal" style="max-width:640px">
+<h3>导入账号</h3>
+<div class="warn-box">
+获取方式：在浏览器打开 <code>https://design.minimaxi.com/login</code> 登录后，页面会尝试跳转到
+<code>minimax-hub-cn://auth-callback?accessToken=...</code>（浏览器会提示无法打开该地址）。
+从地址栏复制完整深链 URL 粘贴到下面；也可以直接粘贴裸 JWT。每行一个，支持批量。
+</div>
+<div class="form-group">
+<label>深链 URL 或 JWT（每行一个）</label>
+<textarea id="importContent" rows="8" placeholder="minimax-hub-cn://auth-callback?accessToken=eyJ...&#10;eyJhbGci...（裸 JWT 也可以）"></textarea>
+</div>
+<div class="form-group">
+<label>备注前缀（可选，生成 前缀-01 / 前缀-02 ...）</label>
+<input class="form-input" id="importLabelPrefix" placeholder="例如：工作号">
+</div>
+<div id="importResult" style="display:none;margin-top:10px"></div>
+<div class="actions">
+<button class="btn btn-secondary" onclick="hideModal('importModal')">关闭</button>
+<button class="btn btn-primary" id="importBtn" onclick="doImport()">开始导入</button>
+</div>
+</div>
+</div>
+
+<!-- 创建密钥对话框 -->
+<div class="modal-overlay" id="createKeyModal">
+<div class="modal">
+<h3>创建 API 密钥</h3>
+<div class="form-group"><label>名称</label>
+<input class="form-input" id="keyName" placeholder="例如：new-api 主站"></div>
+<div class="form-group"><label>任务额度（0 = 不限）</label>
+<input class="form-input" type="number" id="keyMaxTasks" value="0" min="0"></div>
+<div class="form-group"><label>有效期（天，0 = 永不过期）</label>
+<input class="form-input" type="number" id="keyExpiresDays" value="0" min="0"></div>
+<div class="actions">
+<button class="btn btn-secondary" onclick="hideModal('createKeyModal')">取消</button>
+<button class="btn btn-primary" onclick="doCreateKey()">创建</button>
+</div>
+</div>
+</div>
+
+<!-- 密钥明文展示对话框 -->
+<div class="modal-overlay" id="keyPlainModal">
+<div class="modal">
+<h3>密钥创建成功</h3>
+<div class="warn-box">明文密钥只显示这一次，请立即复制保存！</div>
+<div class="form-group"><textarea id="keyPlainText" rows="2" readonly style="width:100%"></textarea></div>
+<div class="actions">
+<button class="btn btn-secondary" onclick="copyKeyPlain()">复制</button>
+<button class="btn btn-primary" onclick="hideModal('keyPlainModal')">我已保存</button>
+</div>
+</div>
+</div>
+
+<!-- 账号恢复链接对话框 -->
+<div class="modal-overlay" id="restoreModal">
+<div class="modal" style="max-width:680px">
+<h3>账号恢复链接 <span id="restoreAccountId" style="font-size:12px;color:var(--c-text-lighter)"></span></h3>
+<div class="warn-box">链接包含该账号的完整登录凭据：在装有 MiniMax Design 的机器上打开，即可以此账号登录官方客户端。请勿发送给他人！</div>
+<div id="restoreMeta" style="font-size:13px;color:var(--c-text-light);margin-bottom:8px"></div>
+<div class="form-group">
+<label style="font-size:13px;color:var(--c-text-light);display:flex;align-items:center;gap:6px;margin-bottom:6px">
+<input type="checkbox" id="restoreRenew"> 生成前先续期 token（旧 token 临期或桌面端验证不过时勾选）
+</label>
+<textarea id="restoreLinkText" rows="3" readonly style="width:100%" onclick="this.select()"></textarea>
+</div>
+<div class="actions">
+<button class="btn btn-secondary" onclick="copyRestoreLink()">复制</button>
+<button class="btn btn-secondary" onclick="regenRestoreLink(this)">重新生成</button>
+<button class="btn btn-primary" onclick="openRestoreLink()">打开链接</button>
+<button class="btn btn-secondary" onclick="hideModal('restoreModal')">关闭</button>
+</div>
+</div>
+</div>
+
+<!-- 任务事件时间线对话框 -->
+<div class="modal-overlay" id="eventsModal">
+<div class="modal" style="max-width:680px">
+<h3>任务事件时间线 <span id="eventsTaskId" style="font-size:12px;color:var(--c-text-lighter)"></span></h3>
+<div id="eventsList" style="max-height:50vh;overflow-y:auto"></div>
+<div class="actions"><button class="btn btn-primary" onclick="hideModal('eventsModal')">关闭</button></div>
+</div>
+</div>
+
+<!-- 媒体预览对话框（视频/图片按 media_type 动态切换） -->
+<div class="modal-overlay" id="previewModal">
+<div class="modal" style="max-width:760px">
+<h3>预览 <span id="previewTaskId" style="font-size:12px;color:var(--c-text-lighter)"></span></h3>
+<div id="previewMedia"><video id="previewVideo" controls style="width:100%;border-radius:8px;background:#000"></video></div>
+<div class="actions"><button class="btn btn-primary" onclick="hideModal('previewModal')">关闭</button></div>
+</div>
+</div>
+
+<!-- 账号测试结果对话框 -->
+<div class="modal-overlay" id="acctTestModal">
+<div class="modal" style="max-width:560px">
+<h3>账号测试结果</h3>
+<div id="acctTestBody"></div>
+<div class="actions"><button class="btn btn-primary" onclick="hideModal('acctTestModal')">关闭</button></div>
+</div>
+</div>
+
+<!-- 批量账号测试对话框 -->
+<div class="modal-overlay" id="batchTestModal">
+<div class="modal" style="max-width:720px">
+<h3>批量账号测试</h3>
+<div id="batchTestBody"></div>
+<div class="actions"><button class="btn btn-primary" onclick="hideModal('batchTestModal')">关闭</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/web/static/app.js"></script>
+</body>
+</html>

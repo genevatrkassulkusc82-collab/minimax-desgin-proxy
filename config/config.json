@@ -1,0 +1,23 @@
+{
+  "listen_addr": "127.0.0.1:8787",
+  "region": "domestic",
+  "cloud_gateway_url": "",
+  "account_api_url": "",
+  "version_code": "3.0.11",
+  "db_path": "data/minimax-2api.db",
+  "video_dir": "data/videos",
+  "admin_username": "admin",
+  "admin_password": "admin123",
+  "worker_count": 4,
+  "per_account_concurrency": 2,
+  "poll_interval_sec": 5,
+  "poll_backoff_factor": 1.3,
+  "poll_max_interval_sec": 20,
+  "poll_max_wait_min": 90,
+  "balance_safety_factor": 1.2,
+  "renew_interval_hour": 12,
+  "balance_interval_min": 15,
+  "reconcile_interval_sec": 60,
+  "upload_timeout_sec": 120,
+  "download_timeout_sec": 300
+}
